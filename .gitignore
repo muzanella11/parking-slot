@@ -1,0 +1,12 @@
+.env
+.DS_Store
+
+.vscode
+
+.package-lock.json
+
+.idea
+__MACOSX
+
+node_modules
+yarn-error.log
