@@ -9,6 +9,7 @@ const menuQuestion = [
     type: 'list',
     choices: [
       'Create Parking Slot',
+      'Add Parking',
       'Check Parking Lot',
       'Close Application',
       'Egg',
@@ -21,6 +22,19 @@ const createParkingQuestion = [
   {
     name: 'createParking',
     message: 'How many parking slots do you want to create ?',
+    type: 'input'
+  }
+]
+
+const addParkingQuestion = [
+  {
+    name: 'registrationNumber',
+    message: 'Insert registration number :',
+    type: 'input'
+  },
+  {
+    name: 'color',
+    message: 'Vehicle colour :',
     type: 'input'
   }
 ]
@@ -61,6 +75,19 @@ const runQuestions = () => {
               closeApplication()
             })
           break
+        case 'Add Parking':
+            questionProcess(addParkingQuestion)
+              .then((value) => {
+                console.info('addd', value)
+                ParkingLot({
+                  command: 'park',
+                  value: value
+                })
+              })
+              .catch(() => {
+                closeApplication()
+              })
+            break
         case 'Check Parking Lot':
             questionProcess(checkParkingQuestion)
               .then((value) => {
