@@ -11,10 +11,8 @@ const menuQuestion = [
       'Create Parking Lot',
       'Add Parking Lot',
       'Leave Parking Lot',
-      'Check Parking Lot',
-      'Close Application',
-      'Egg',
-      'Mango'
+      'Show Parking Lot',
+      'Close Application'
     ]
   }
 ]
@@ -40,16 +38,16 @@ const addParkingQuestion = [
   }
 ]
 
-const checkParkingQuestion = [
+const showParkingQuestion = [
   {
-    name: 'checkParking',
-    message: 'Check Parking',
+    name: 'showParking',
+    message: 'Show Parking',
     type: 'list',
     choices: [
-      'Check Slot Parking Lot',
-      'Check Registration Number By Colour',
-      'Check Slot Number By Colour',
-      'Check Slot Number By Registration Number'
+      'Show Slot Parking Lot',
+      'Show Slot Parking By Colour',
+      'Show Slot Parking By Registration Number',
+      'Show Slot Parking By Slot Number'
     ]
   }
 ]
@@ -78,6 +76,30 @@ const leaveParkingBySlotQuestion = [
   {
     name: 'leaveBySlot',
     message: 'Insert slot number :',
+    type: 'input'
+  }
+]
+
+const showParkingByColorQuestion = [
+  {
+    name: 'showByColor',
+    message: 'Insert color you want to show :',
+    type: 'input'
+  }
+]
+
+const showParkingByIdQuestion = [
+  {
+    name: 'showById',
+    message: 'Insert registration number you want to show :',
+    type: 'input'
+  }
+]
+
+const showParkingBySlotQuestion = [
+  {
+    name: 'showBySlot',
+    message: 'Insert slot number you want to show :',
     type: 'input'
   }
 ]
@@ -153,23 +175,50 @@ const runQuestions = () => {
               closeApplication()
             })
           break
-        case 'Check Parking Lot':
-            questionProcess(checkParkingQuestion)
+        case 'Show Parking Lot':
+            questionProcess(showParkingQuestion)
               .then((value) => {
-                switch (value.checkParking) {
-                  case 'Check Slot Parking Lot':
+                switch (value.showParking) {
+                  case 'Show Slot Parking Lot':
                     ParkingLot({
-                      command: 'status'
+                      command: 'show'
                     })
                     break
-                  case 'Check Registration Number By Colour':
-                    //
+                  case 'Show Slot Parking By Colour':
+                      questionProcess(showParkingByColorQuestion)
+                        .then((value) => {
+                          ParkingLot({
+                            command: 'showByColor',
+                            value: value.showByColor
+                          })
+                        })
+                        .catch(() => {
+                          closeApplication()
+                        })
                     break
-                  case 'Check Slot Number By Colour':
-                    //
+                  case 'Show Slot Parking By Registration Number':
+                    questionProcess(showParkingByIdQuestion)
+                      .then((value) => {
+                        ParkingLot({
+                          command: 'showById',
+                          value: value.showById
+                        })
+                      })
+                      .catch(() => {
+                        closeApplication()
+                      })
                     break
-                  case 'Check Slot Number By Registration Number':
-                    //
+                  case 'Show Slot Parking By Slot Number':
+                    questionProcess(showParkingBySlotQuestion)
+                      .then((value) => {
+                        ParkingLot({
+                          command: 'showBySlot',
+                          value: value.showBySlot
+                        })
+                      })
+                      .catch(() => {
+                        closeApplication()
+                      })
                     break
                   default:
                     closeApplication()
