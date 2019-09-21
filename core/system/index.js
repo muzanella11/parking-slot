@@ -23,8 +23,17 @@ class ParkingLot {
       case 'leaveBySlot':
         this.leaveParking('slot')
         break
-      case 'status':
+      case 'show':
         this.readParkingSlot()
+        break
+      case 'showByColor':
+        this.readParkingSlot('color', this.config.value)
+        break
+      case 'showById':
+        this.readParkingSlot('registrationNumber', this.config.value)
+        break
+      case 'showBySlot':
+        this.readParkingSlot('slotNumber', parseInt(this.config.value))
         break
       case 'close':
         closeApplication()
@@ -238,28 +247,42 @@ class ParkingLot {
     } catch {}
   }
 
-  async readParkingSlot () {
+  async readParkingSlot (filterBy, value) {
     try {
       await this.readData()
 
       const parkingData = this.parkingData || []
-      const result = parkingData.map((itemParkingData, indexParkingData) => {
+      let result = parkingData.map((itemParkingData, indexParkingData) => {
         return Object.assign({}, itemParkingData, {
           slotNumber: indexParkingData + 1,
           registrationNumber: itemParkingData.registrationNumber ? itemParkingData.registrationNumber : 'available',
           color: itemParkingData.color ? itemParkingData.color : 'available'
         })
       })
-      const parkingAvailability = []
 
-      for (let j = 0; j < parkingData.length; j++) {
-        if (parkingData[j].registrationNumber === undefined || parkingData[j].registrationNumber === '') {
-          parkingAvailability.push(j)
-        }
+      if (filterBy && value) {
+        result = result.filter(itemFilter => itemFilter[filterBy] === value) || []
+      }
+
+      if (result.length === 0) {
+        console.info('Not found result :(')
+
+        return
       }
 
       console.table(result)
-      console.info('Availability Parking Lot : ', parkingAvailability.length)
+
+      if (!filterBy && !value) {
+        const parkingAvailability = []
+
+        for (let j = 0; j < parkingData.length; j++) {
+          if (parkingData[j].registrationNumber === undefined || parkingData[j].registrationNumber === '') {
+            parkingAvailability.push(j)
+          }
+        }
+
+        console.info('Availability Parking Lot : ', parkingAvailability.length)
+      }
     } catch {}
   }
 
