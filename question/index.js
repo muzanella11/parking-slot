@@ -74,6 +74,14 @@ const leaveParkingByIdQuestion = [
   }
 ]
 
+const leaveParkingBySlotQuestion = [
+  {
+    name: 'leaveBySlot',
+    message: 'Insert slot number :',
+    type: 'input'
+  }
+]
+
 const closeApplication = () => {
   ParkingLot({
     command: 'close'
@@ -113,7 +121,16 @@ const runQuestions = () => {
             .then((value) => {
               switch (value.leaveParking) {
                 case 'Leave Parking By Slot Number':
-                  //
+                  questionProcess(leaveParkingBySlotQuestion)
+                    .then((value) => {
+                      ParkingLot({
+                        command: 'leaveBySlot',
+                        value: value.leaveBySlot
+                      })
+                    })
+                    .catch(() => {
+                      closeApplication()
+                    })
                   break
                 case 'Leave Parking By Registration Number':
                   questionProcess(leaveParkingByIdQuestion)

@@ -8,6 +8,7 @@ class ParkingLot {
     this.result = undefined
     this.parkingSlot = config.parkingSlot || 0
     this.parkingData = config.parkingData || []
+    this.parkingSlotAvail = 0
 
     switch (this.config.command) {
       case 'create':
@@ -17,7 +18,10 @@ class ParkingLot {
         this.addParking()
         break
       case 'leaveById':
-        this.leaveParkingById()
+        this.leaveParking('id')
+        break
+      case 'leaveBySlot':
+        this.leaveParking('slot')
         break
       case 'status':
         this.readParkingSlot()
@@ -158,13 +162,24 @@ class ParkingLot {
     } catch {}
   }
 
-  async leaveParkingById () {
+  async leaveParking (param) {
     try {
       await this.readData()
 
       const parkingData = this.parkingData || []
-      const parkingValue = this.config.value || {}
-      const isParking = parkingData.find(itemFind => itemFind.registrationNumber === parkingValue)
+      const parkingValue = this.config.value || {} || 0
+
+      if (param === 'slot' && /^\d+$/.test(parkingValue) === false) {
+        console.clear()
+        console.error('Something wrong when leaving parking lot')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+
+        return
+      }
+
+      const isParking = parkingData.find((itemFind, indexFind) => (itemFind.registrationNumber === parkingValue && param === 'id') || (indexFind === (parkingValue - 1) && param === 'slot'))
 
       if (!isParking) {
         console.clear()
@@ -176,8 +191,10 @@ class ParkingLot {
         return
       }
       
-      const parkingResult = parkingData.map(itemParkingData => {
-        if (itemParkingData.registrationNumber === parkingValue) {
+      const parkingResult = parkingData.map((itemParkingData, indexMap) => {
+        if ((itemParkingData.registrationNumber === parkingValue && param === 'id') || (indexMap === (parkingValue - 1) && param === 'slot')) {
+          this.parkingSlotAvail = indexMap + 1
+
           return {
             registrationNumber: '',
             color: ''
@@ -199,7 +216,7 @@ class ParkingLot {
         })
         
         console.clear()
-        console.info('Success leave parking slot')
+        console.info(`Slot number ${this.parkingSlotAvail} is free`)
         setTimeout(() => {
           closeApplication()
         }, 2000)
