@@ -8,7 +8,7 @@ const menuQuestion = [
     message: 'Welcome in Parking Lot',
     type: 'list',
     choices: [
-      'Create Parking Lot',
+      'Create Parking Slot',
       'Check Parking Lot',
       'Close Application',
       'Egg',
@@ -49,11 +49,12 @@ const runQuestions = () => {
   questionProcess(menuQuestion)
     .then((value) => {
       switch (value.menuParking) {
-        case 'Create Parking Lot':
+        case 'Create Parking Slot':
           questionProcess(createParkingQuestion)
             .then((value) => {
               ParkingLot({
-                command: 'create'
+                command: 'create',
+                parkingSlot: value.createParking
               })
             })
             .catch(() => {

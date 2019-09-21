@@ -3,11 +3,12 @@ const closeApplication = require('./closeApplication')
 
 class ParkingLot {
   constructor (config) {
+    this.fs = new fileSystem
     this.config = config || {}
     this.result = undefined
-    this.parkingSlot = 0
-    this.parkingData = []
-    
+    this.parkingSlot = config.parkingSlot || 0
+    this.parkingData = config.parkingData || []
+
     switch (this.config.command) {
       case 'create':
         this.createParkingSlot()
@@ -28,27 +29,62 @@ class ParkingLot {
     }
   }
 
-  createParkingSlot () {
-    console.info('create parking slot')
+  async createParkingSlot () {
+    const parkingSlot = this.parkingSlot
 
-    fileSystem({
-      command: 'create'
-    })
+    try {
+      await this.readData()
+
+      const rawResult = Object.assign({}, this.result, {
+        PARKING_SLOT: /^\d+$/.test(parkingSlot) ? parseInt(parkingSlot) : 0
+      })
+
+      const result = this.getDataResult(rawResult)
+
+      try {
+        await this.fs.processCreate({
+          message: result
+        })
+        
+        console.clear()
+        console.info('Success creating parking slot')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+      } catch {
+        console.clear()
+        console.error('Failed creating parking slot')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+      }
+    } catch {
+      try {
+        await this.fs.processCreate({
+          resetData: true
+        })
+      } catch {}
+    }
   }
 
   async readParkingSlot () {
-    const fs = new fileSystem({
-      command: 'read'
-    })
-
     try {
-      this.result = await fs.processRead()
-    } catch (error) {
-      this.result = error
-    }
+      await this.readData()
+    } catch {}
+  }
 
-    this.parkingSlot = parseInt(this.getParkingObject(this.result, 'PARKING_SLOT'))
-    this.parkingData = JSON.parse(this.getParkingObject(this.result, 'PARKING_DATA'))
+  readData () {
+    return new Promise((resolve, reject) => {
+      this.fs.processRead().then(res => {
+        this.result = res
+        this.parkingSlot = parseInt(this.getParkingObject(this.result, 'PARKING_SLOT'))
+        this.parkingData = JSON.parse(this.getParkingObject(this.result, 'PARKING_DATA'))
+
+        resolve(res)
+      }).catch(err => {
+        reject(err)
+      })
+    })
   }
 
   getParkingObject (rawData, obj) {
@@ -63,6 +99,17 @@ class ParkingLot {
     }
 
     return rawData[obj]
+  }
+
+  getDataResult (rawResult) {
+    const rawData = Object.entries(rawResult)
+
+    let result = ''
+    rawData.forEach(itemRawDara => {
+      result += itemRawDara[0] ? `${itemRawDara[0]}=${itemRawDara[1]}\n` : ''
+    })
+
+    return result
   }
 }
 

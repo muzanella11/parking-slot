@@ -6,6 +6,7 @@ class FileSystem {
   constructor (config) {
     this.config = config || {}
     this.result = undefined
+    this.initContentFile = 'PARKING_SLOT=0\nPARKING_DATA="[]"'
   }
 
   checkFileExist () {
@@ -30,6 +31,8 @@ class FileSystem {
           setTimeout(() => {
             closeApplication()
           }, 2000)
+
+          return
         }
       })
       const rawData = fileData.split('\n')
@@ -47,6 +50,7 @@ class FileSystem {
 
       return result
     } catch (error) {
+      fs.writeFileSync(pathParkingData, this.initContentFile)
       return {}
     }
   }
@@ -55,9 +59,13 @@ class FileSystem {
     try {
       await this.checkFileExist()
 
-      if (!this.config.message || this.config.message !== undefined) {
+      if (this.config.resetData) {
+        this.config.message = this.initContentFile
+      }
+
+      if (!this.config.message) {
         console.clear()
-        console.error('Something wrong when creating file :(')
+        console.error('Something wrong when creating file :( asdasd')
         setTimeout(() => {
           closeApplication()
         }, 2000)
@@ -75,8 +83,6 @@ class FileSystem {
 
           return
         }
-    
-        console.info('tag', '')
       })
     } catch (error) {
       console.clear()
@@ -95,8 +101,14 @@ class FileSystem {
     }
   }
 
-  async processCreate () {
-    await this.createFileData()
+  async processCreate (config) {
+    try {
+      this.config = config
+
+      await this.createFileData()
+    } catch (error) {
+      return error
+    }
   }
 }
 
