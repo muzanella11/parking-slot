@@ -166,6 +166,16 @@ class ParkingLot {
   async readParkingSlot () {
     try {
       await this.readData()
+
+      const result = this.parkingData.map((itemParkingData, indexParkingData) => {
+        return Object.assign({}, itemParkingData, {
+          slotNumber: indexParkingData + 1,
+          registrationNumber: itemParkingData.registrationNumber ? itemParkingData.registrationNumber : 'available',
+          color: itemParkingData.color ? itemParkingData.color : 'available'
+        })
+      })
+
+      console.table(result)
     } catch {}
   }
 
