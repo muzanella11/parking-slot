@@ -13,6 +13,9 @@ class ParkingLot {
       case 'create':
         this.createParkingSlot()
         break
+      case 'park':
+        this.addParking()
+        break
       case 'status':
         this.readParkingSlot()
         break
@@ -35,8 +38,21 @@ class ParkingLot {
     try {
       await this.readData()
 
+      const counterParkingSlot = /^\d+$/.test(parkingSlot) ? parseInt(parkingSlot) : 0
+      const parkingData = []
+
+      if (counterParkingSlot > 0) {
+        for (let i = 0; i < counterParkingSlot; i++) {
+          parkingData.push({
+            registrationNumber: '',
+            color: ''
+          })
+        }
+      }
+
       const rawResult = Object.assign({}, this.result, {
-        PARKING_SLOT: /^\d+$/.test(parkingSlot) ? parseInt(parkingSlot) : 0
+        PARKING_SLOT: counterParkingSlot,
+        PARKING_DATA: JSON.stringify(parkingData)
       })
 
       const result = this.getDataResult(rawResult)
@@ -59,12 +75,92 @@ class ParkingLot {
         }, 2000)
       }
     } catch {
+      this.resetParking()
+    }
+  }
+
+  async addParking () {
+    try {
+      await this.readData()
+
+      const parkingData = JSON.parse(this.result.PARKING_DATA) || []
+      const parkingValue = this.config.value || {}
+      const parkingAvailability = []
+
+      // Checking parking value
+      if (!parkingValue.registrationNumber || !parkingValue.color) {
+        console.clear()
+        console.error('Registration number and color must be filled')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+
+        return
+      }
+
+      // Checking availability slot and park vehicle
+      let isParking = false
+
+      for (let i = 0; i < parkingData.length; i++) {
+        if (parkingData[i].registrationNumber === undefined || parkingData[i].registrationNumber === '' && !isParking) {
+          parkingData[i] = {
+            registrationNumber: parkingValue.registrationNumber,
+            color: parkingValue.color
+          }
+
+          isParking = true
+        }
+      }
+
+      // Set parking availability
+      for (let j = 0; j < parkingData.length; j++) {
+        if (parkingData[j].registrationNumber === undefined || parkingData[j].registrationNumber === '') {
+          parkingAvailability.push(j)
+        }
+      }
+
+      if (parkingAvailability.length === 0) {
+        console.clear()
+        console.error('Sorry, parking lot is full')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+
+        return
+      }
+
+      const rawResult = Object.assign({}, this.result, {
+        PARKING_DATA: JSON.stringify(parkingData)
+      })
+
+      const result = this.getDataResult(rawResult)
+
       try {
         await this.fs.processCreate({
-          resetData: true
+          message: result
         })
-      } catch {}
-    }
+        
+        console.clear()
+        console.info('Success add parking slot')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+      } catch {
+        console.clear()
+        console.error('Failed add parking slot')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+      }
+    } catch {}
+  }
+
+  async resetParking () {
+    try {
+      await this.fs.processCreate({
+        resetData: true
+      })
+    } catch {}
   }
 
   async readParkingSlot () {
@@ -105,8 +201,8 @@ class ParkingLot {
     const rawData = Object.entries(rawResult)
 
     let result = ''
-    rawData.forEach(itemRawDara => {
-      result += itemRawDara[0] ? `${itemRawDara[0]}=${itemRawDara[1]}\n` : ''
+    rawData.forEach(itemRawData => {
+      result += itemRawData[0] ? `${itemRawData[0]}=${itemRawData[1]}\n` : ''
     })
 
     return result

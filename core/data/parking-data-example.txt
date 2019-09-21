@@ -1,2 +1,2 @@
 PARKING_SLOT=6
-PARKING_DATA="[{registrationNumber: 'KA-01-HH-1', color: 'white'},{registrationNumber: 'KA-01-HH-2', color: 'white'},{registrationNumber: 'KA-01-HH-3', color: 'black'},{registrationNumber: 'KA-01-HH-4', color: 'red'},{registrationNumber: 'KA-01-HH-5', color: 'blue'},{registrationNumber: 'KA-01-HH-6', color: 'black'}]"
+PARKING_DATA=[{"registrationNumber":"KA-01-HH-1","color":"white"},{"registrationNumber":"KA-01-HH-2","color":"white"},{"registrationNumber":"KA-01-HH-3","color":"black"},{"registrationNumber":"KA-01-HH-4","color":"red"},{"registrationNumber":"KA-01-HH-5","color":"blue"},{"registrationNumber":"KA-01-HH-6","color":"black"}]
