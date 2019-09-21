@@ -8,6 +8,7 @@ class ParkingLot {
     this.result = undefined
     this.parkingSlot = config.parkingSlot || 0
     this.parkingData = config.parkingData || []
+    this.parkingSlotAvail = 0
 
     switch (this.config.command) {
       case 'create':
@@ -15,6 +16,12 @@ class ParkingLot {
         break
       case 'park':
         this.addParking()
+        break
+      case 'leaveById':
+        this.leaveParking('id')
+        break
+      case 'leaveBySlot':
+        this.leaveParking('slot')
         break
       case 'status':
         this.readParkingSlot()
@@ -155,6 +162,74 @@ class ParkingLot {
     } catch {}
   }
 
+  async leaveParking (param) {
+    try {
+      await this.readData()
+
+      const parkingData = this.parkingData || []
+      const parkingValue = this.config.value || {} || 0
+
+      if (param === 'slot' && /^\d+$/.test(parkingValue) === false) {
+        console.clear()
+        console.error('Something wrong when leaving parking lot')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+
+        return
+      }
+
+      const isParking = parkingData.find((itemFind, indexFind) => (itemFind.registrationNumber === parkingValue && param === 'id') || (indexFind === (parkingValue - 1) && param === 'slot'))
+
+      if (!isParking) {
+        console.clear()
+        console.error('We not found your vehicle :(')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+
+        return
+      }
+      
+      const parkingResult = parkingData.map((itemParkingData, indexMap) => {
+        if ((itemParkingData.registrationNumber === parkingValue && param === 'id') || (indexMap === (parkingValue - 1) && param === 'slot')) {
+          this.parkingSlotAvail = indexMap + 1
+
+          return {
+            registrationNumber: '',
+            color: ''
+          }
+        }
+
+        return itemParkingData
+      })
+
+      const rawResult = Object.assign({}, this.result, {
+        PARKING_DATA: JSON.stringify(parkingResult)
+      })
+
+      const result = this.getDataResult(rawResult)
+
+      try {
+        await this.fs.processCreate({
+          message: result
+        })
+        
+        console.clear()
+        console.info(`Slot number ${this.parkingSlotAvail} is free`)
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+      } catch {
+        console.clear()
+        console.error('Failed leave parking slot')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+      }
+    } catch {}
+  }
+
   async resetParking () {
     try {
       await this.fs.processCreate({
@@ -166,6 +241,25 @@ class ParkingLot {
   async readParkingSlot () {
     try {
       await this.readData()
+
+      const parkingData = this.parkingData || []
+      const result = parkingData.map((itemParkingData, indexParkingData) => {
+        return Object.assign({}, itemParkingData, {
+          slotNumber: indexParkingData + 1,
+          registrationNumber: itemParkingData.registrationNumber ? itemParkingData.registrationNumber : 'available',
+          color: itemParkingData.color ? itemParkingData.color : 'available'
+        })
+      })
+      const parkingAvailability = []
+
+      for (let j = 0; j < parkingData.length; j++) {
+        if (parkingData[j].registrationNumber === undefined || parkingData[j].registrationNumber === '') {
+          parkingAvailability.push(j)
+        }
+      }
+
+      console.table(result)
+      console.info('Availability Parking Lot : ', parkingAvailability.length)
     } catch {}
   }
 
