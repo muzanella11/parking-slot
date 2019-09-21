@@ -8,8 +8,9 @@ const menuQuestion = [
     message: 'Welcome in Parking Lot',
     type: 'list',
     choices: [
-      'Create Parking Slot',
-      'Add Parking',
+      'Create Parking Lot',
+      'Add Parking Lot',
+      'Leave Parking Lot',
       'Check Parking Lot',
       'Close Application',
       'Egg',
@@ -53,6 +54,26 @@ const checkParkingQuestion = [
   }
 ]
 
+const leaveParkingQuestion = [
+  {
+    name: 'leaveParking',
+    message: 'Leave Parking Parking',
+    type: 'list',
+    choices: [
+      'Leave Parking By Slot Number',
+      'Leave Parking By Registration Number'
+    ]
+  }
+]
+
+const leaveParkingByIdQuestion = [
+  {
+    name: 'leaveById',
+    message: 'Insert registration number :',
+    type: 'input'
+  }
+]
+
 const closeApplication = () => {
   ParkingLot({
     command: 'close'
@@ -63,7 +84,7 @@ const runQuestions = () => {
   questionProcess(menuQuestion)
     .then((value) => {
       switch (value.menuParking) {
-        case 'Create Parking Slot':
+        case 'Create Parking Lot':
           questionProcess(createParkingQuestion)
             .then((value) => {
               ParkingLot({
@@ -75,19 +96,46 @@ const runQuestions = () => {
               closeApplication()
             })
           break
-        case 'Add Parking':
-            questionProcess(addParkingQuestion)
-              .then((value) => {
-                console.info('addd', value)
-                ParkingLot({
-                  command: 'park',
-                  value: value
-                })
+        case 'Add Parking Lot':
+          questionProcess(addParkingQuestion)
+            .then((value) => {
+              ParkingLot({
+                command: 'park',
+                value: value
               })
-              .catch(() => {
-                closeApplication()
-              })
-            break
+            })
+            .catch(() => {
+              closeApplication()
+            })
+          break
+        case 'Leave Parking Lot':
+          questionProcess(leaveParkingQuestion)
+            .then((value) => {
+              switch (value.leaveParking) {
+                case 'Leave Parking By Slot Number':
+                  //
+                  break
+                case 'Leave Parking By Registration Number':
+                  questionProcess(leaveParkingByIdQuestion)
+                    .then((value) => {
+                      ParkingLot({
+                        command: 'leaveById',
+                        value: value.leaveById
+                      })
+                    })
+                    .catch(() => {
+                      closeApplication()
+                    })
+                  break
+                default:
+                  closeApplication()
+                  break
+              }
+            })
+            .catch(() => {
+              closeApplication()
+            })
+          break
         case 'Check Parking Lot':
             questionProcess(checkParkingQuestion)
               .then((value) => {

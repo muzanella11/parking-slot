@@ -16,6 +16,9 @@ class ParkingLot {
       case 'park':
         this.addParking()
         break
+      case 'leaveById':
+        this.leaveParkingById()
+        break
       case 'status':
         this.readParkingSlot()
         break
@@ -155,6 +158,61 @@ class ParkingLot {
     } catch {}
   }
 
+  async leaveParkingById () {
+    try {
+      await this.readData()
+
+      const parkingData = this.parkingData || []
+      const parkingValue = this.config.value || {}
+      const isParking = parkingData.find(itemFind => itemFind.registrationNumber === parkingValue)
+
+      if (!isParking) {
+        console.clear()
+        console.error('We not found your vehicle :(')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+
+        return
+      }
+      
+      const parkingResult = parkingData.map(itemParkingData => {
+        if (itemParkingData.registrationNumber === parkingValue) {
+          return {
+            registrationNumber: '',
+            color: ''
+          }
+        }
+
+        return itemParkingData
+      })
+
+      const rawResult = Object.assign({}, this.result, {
+        PARKING_DATA: JSON.stringify(parkingResult)
+      })
+
+      const result = this.getDataResult(rawResult)
+
+      try {
+        await this.fs.processCreate({
+          message: result
+        })
+        
+        console.clear()
+        console.info('Success leave parking slot')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+      } catch {
+        console.clear()
+        console.error('Failed leave parking slot')
+        setTimeout(() => {
+          closeApplication()
+        }, 2000)
+      }
+    } catch {}
+  }
+
   async resetParking () {
     try {
       await this.fs.processCreate({
@@ -167,15 +225,24 @@ class ParkingLot {
     try {
       await this.readData()
 
-      const result = this.parkingData.map((itemParkingData, indexParkingData) => {
+      const parkingData = this.parkingData || []
+      const result = parkingData.map((itemParkingData, indexParkingData) => {
         return Object.assign({}, itemParkingData, {
           slotNumber: indexParkingData + 1,
           registrationNumber: itemParkingData.registrationNumber ? itemParkingData.registrationNumber : 'available',
           color: itemParkingData.color ? itemParkingData.color : 'available'
         })
       })
+      const parkingAvailability = []
+
+      for (let j = 0; j < parkingData.length; j++) {
+        if (parkingData[j].registrationNumber === undefined || parkingData[j].registrationNumber === '') {
+          parkingAvailability.push(j)
+        }
+      }
 
       console.table(result)
+      console.info('Availability Parking Lot : ', parkingAvailability.length)
     } catch {}
   }
 
