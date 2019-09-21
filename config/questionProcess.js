@@ -7,22 +7,11 @@ module.exports = (config) => {
       reject()
     }
     
-    prompt({
-      name: 'questionId',
-      message: 'Messages',
-      type: 'checkbox',
-      choices: [
-        'Pizza',
-        'Egg',
-        'Mango'
-      ]
-    })
+    prompt(config)
       .then((value) => {
-        console.info('hehe : ', value)
         resolve(value)
       })
       .catch((value) => {
-        console.info('errr : ', value)
         reject(value)
       })
   })

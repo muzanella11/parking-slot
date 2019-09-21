@@ -10,3 +10,5 @@ __MACOSX
 
 node_modules
 yarn-error.log
+
+core/data/parking-data.txt
